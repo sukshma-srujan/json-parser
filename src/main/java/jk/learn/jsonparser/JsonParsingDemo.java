@@ -1,8 +1,6 @@
 package jk.learn.jsonparser;
 
-import java.util.*;
-
-public class JsonParser {
+public class JsonParsingDemo {
   public static void main(String[] args) {
     char[] json = """
         {
