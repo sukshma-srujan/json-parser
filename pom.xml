@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>jsonparser</artifactId>
+  <groupId>com.jk.learn</groupId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Json Parser</name>
+  <description>A json parser for learning</description>
+
+  <developers>
+    <developer>
+      <name>Jitendra Kumar</name>
+      <email>jk.bhu85@gmail.com</email>
+    </developer>
+  </developers>
+
+  <properties>
+    <java.version>17</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.targetEncoding>UTF-8</project.reporting.targetEncoding>
+  </properties>
+
+  <dependencies>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.0</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
