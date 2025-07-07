@@ -29,6 +29,15 @@ public class TokenAssertions {
     return it.hasPrevious();
   }
 
+  public void mustBeJson() {
+    if (token == null) {
+      throw new JsonParsingException("Expecting JSON");
+    }
+    if (token.type != TokenType.STRING && token.type != TokenType.NULL) {
+      throw new JsonParsingException("Expecting JSON at line " + token.line + " and column " + token.colStart);
+    }
+  }
+
   public void mustBeString() {
     mustBe(TokenType.STRING);
   }
@@ -98,10 +107,11 @@ public class TokenAssertions {
   static String stringFor(TokenType type) {
     return switch (type) {
       case STRING -> "string";
-      case O_START -> "'}'";
-      case O_END -> "'{'";
+      case O_START -> "'{'";
+      case O_END -> "'}'";
       case COLON -> "':'";
       case COMMA -> "','";
+      case NULL -> "null";
     };
   }
 }

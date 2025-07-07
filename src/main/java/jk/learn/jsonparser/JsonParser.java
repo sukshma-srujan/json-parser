@@ -7,7 +7,8 @@ public class JsonParser {
     char[] json = """
         {
           "name": "ram",
-          "city": "ayodhya"
+          "city": "ayodhya",
+          "place": null,
         }\
         """.toCharArray();
 

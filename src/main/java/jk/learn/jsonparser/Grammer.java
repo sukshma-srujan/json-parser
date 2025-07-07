@@ -35,6 +35,6 @@ public class Grammer {
   static void assertKeyValuePair(TokenAssertions ta) {
     ta.next().mustBeString();
     ta.next().mustBeColon();
-    ta.next().mustBeString();
+    ta.next().mustBeJson();
   }
 }

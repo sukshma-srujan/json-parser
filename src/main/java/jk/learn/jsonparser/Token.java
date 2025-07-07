@@ -15,12 +15,12 @@ public class Token {
     this.content = null;
   }
 
-  public Token(TokenType type, int line, int colStart, String content) {
+  public Token(TokenType type, int line, int colStart, int colEnd, String content) {
     this.type = type;
     this.line = line;
     this.colStart = colStart;
+    this.colEnd = colEnd;
     this.content = content;
-    this.colEnd = colStart + content.length() + 1;
   }
 
   @Override
@@ -29,7 +29,7 @@ public class Token {
   }
 
   private String contentToString() {
-    if (content == null) {
+    if (content == null || type == TokenType.NULL) {
       return "";
     }
     String val = "";
@@ -56,6 +56,10 @@ public class Token {
   }
 
   static Token string(int line, int col, String content) {
-    return new Token(TokenType.STRING, line, col, content);
+    return new Token(TokenType.STRING, line, col, col + content.length() + 1, content);
+  }
+
+  static Token _null(int line, int col, String content) {
+    return new Token(TokenType.NULL, line, col, col + content.length(), content);
   }
 }
