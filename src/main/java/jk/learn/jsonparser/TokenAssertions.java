@@ -107,11 +107,12 @@ public class TokenAssertions {
   static String stringFor(TokenType type) {
     return switch (type) {
       case STRING -> "string";
+      case NUMBER -> "number";
+      case NULL -> "null";
       case O_START -> "'{'";
       case O_END -> "'}'";
       case COLON -> "':'";
       case COMMA -> "','";
-      case NULL -> "null";
     };
   }
 }

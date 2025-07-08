@@ -6,8 +6,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
+  static final Pattern NUMBER_START = Pattern.compile("[+-]|\\d");
+  static final Pattern PARTIAL_NUMBER =
+      Pattern.compile("[+-]?\\d+|[+-]?\\d+\\.|[+-]?\\d+\\.\\d+");
+  static final Pattern COMPLETE_NUMBER = Pattern.compile("([+-]?\\d+)(\\.\\d+)?");
   static final Pattern PARTIAL_NULL = Pattern.compile("n|nu|nul", Pattern.CASE_INSENSITIVE);
   static final Pattern COMPLETE_NULL = Pattern.compile("null", Pattern.CASE_INSENSITIVE);
+
+  static final Matcher NUMBER_START_MATCHER = NUMBER_START.matcher("");
 
   static List<Token> tokenize(char[] json) {
     // trying to parse a simple object with key values, all values are strings
@@ -15,6 +21,8 @@ public class Tokenizer {
     //   "key": "value"
     // }
     List<Token> tokens = new LinkedList<>();
+    final Matcher partialNumberMatcher = PARTIAL_NUMBER.matcher("");
+    final Matcher completeNumberMatcher = COMPLETE_NUMBER.matcher("");
     final Matcher partialNullMatcher = PARTIAL_NULL.matcher("");
     final Matcher completeNullMatcher = COMPLETE_NULL.matcher("");
     int line = 1;
@@ -30,7 +38,26 @@ public class Tokenizer {
       column++;
       char ch = ci.next();
 
-      if (ch == '"') {
+      if (ch == '\n') {
+        column = 0;
+        line++;
+      }
+      else if (ch == ' ' || ch == '\t') {
+        // do nothing
+      }
+      else if (ch == '{') {
+        tokens.add(Token.oStart(line, column));
+      }
+      else if (ch == '}') {
+        tokens.add(Token.oEnd(line, column));
+      }
+      else if (ch == ':') {
+        tokens.add(Token.colon(line, column));
+      }
+      else if (ch == ',') {
+        tokens.add(Token.comma(line, column));
+      }
+      else if (ch == '"') {
         ctxt.inToString();
         sLine = line;
         sCol = column;
@@ -71,24 +98,39 @@ public class Tokenizer {
           }
         }
       }
-      else if (ch == '\n') {
-        column = 0;
-        line++;
-      }
-      else if (ch == ' ' || ch == '\t') {
-        continue;
-      }
-      else if (ch == '{') {
-        tokens.add(Token.oStart(line, column));
-      }
-      else if (ch == '}') {
-        tokens.add(Token.oEnd(line, column));
-      }
-      else if (ch == ':') {
-        tokens.add(Token.colon(line, column));
-      }
-      else if (ch == ',') {
-        tokens.add(Token.comma(line, column));
+      else if (isNumberBegin(ch)) {
+        ctxt.inToNumber();
+        buffer = new StringBuilder(10);
+        sLine = line;
+        sCol = column;
+        buffer.append(ch);
+
+        while (ci.hasNext()) {
+          ch = ci.next();
+          buffer.append(ch);
+          partialNumberMatcher.reset(buffer);
+
+          if (!partialNumberMatcher.matches()) {
+            break;
+          }
+        }
+
+        if (!partialNumberMatcher.matches()) {
+          buffer.deleteCharAt(buffer.length() - 1);
+          ci.previous();
+        }
+
+        completeNumberMatcher.reset(buffer);
+
+        if (completeNumberMatcher.matches()) {
+          tokens.add(Token.number(sLine, sCol, buffer.toString()));
+          buffer = null;
+          ctxt.outOfNumber();
+        } else {
+          ch = buffer.charAt(buffer.length() - 1);
+          throw new JsonParsingException(
+              "Unexpected character '" + ch + "' at line " + line + " and column " + column);
+        }
       }
       else {
         throw new JsonParsingException(
@@ -107,9 +149,15 @@ public class Tokenizer {
     return ch == 'n' || ch == 'N';
   }
 
+  static boolean isNumberBegin(char ch) {
+    NUMBER_START_MATCHER.reset(ch + "");
+    return NUMBER_START_MATCHER.matches();
+  }
+
   static class BasicContext {
     boolean _string;
     boolean _null;
+    boolean _number;
 
     void inToString() {
       _string = !_string;
@@ -127,16 +175,24 @@ public class Tokenizer {
       _null = !_null;
     }
 
+    void inToNumber() {
+      _number = !_number;
+    }
+
+    void outOfNumber() {
+      _number = !_number;
+    }
+
     boolean isString() {
-      return _string && !_null;
+      return _string && !_null && !_number;
     }
 
     boolean isNull() {
-      return !_string && _null;
+      return !_string && _null && !_number;
     }
 
     boolean isNone() {
-      return !_string && !_null;
+      return !_string && !_null && _number;
     }
   }
 }

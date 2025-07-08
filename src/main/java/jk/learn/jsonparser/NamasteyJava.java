@@ -1,11 +1,24 @@
 package jk.learn.jsonparser;
 
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class RegexHi {
+public class NamasteyJava {
   public static void main(String[] args) {
-    test1();
+    ListIterator<Integer> li = List.of(1,2,3).listIterator();
+    System.out.println("next : " + li.next());
+    System.out.println("next : " + li.next());
+    System.out.println("prev : " + li.previous());
+    System.out.println("next : " + li.next());
+    System.out.println("next : " + li.next());
+
+    CharIterator ci = new CharIterator(new char[] {'a', 'b', 'c'});
+    System.out.println("next : " + ci.next());
+    System.out.println("next : " + ci.next());
+    System.out.println("prev : " + ci.previous());
+    System.out.println("next : " + ci.next());
+    System.out.println("next : " + ci.next());
   }
 
   static void test1() {
