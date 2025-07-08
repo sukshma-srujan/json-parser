@@ -1,4 +1,7 @@
-package jk.learn.jsonparser;
+package jk.learn.demo;
+
+import jk.learn.jsonparser.Grammer;
+import jk.learn.jsonparser.Tokenizer;
 
 public class JsonParsingDemo {
   public static void main(String[] args) {

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class Grammer {
-  static void check(List<Token> tokens) {
+  public static void check(List<Token> tokens) {
     if (tokens.isEmpty()) {
       return;
     }

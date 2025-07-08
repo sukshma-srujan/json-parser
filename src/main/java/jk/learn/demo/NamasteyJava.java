@@ -1,8 +1,9 @@
-package jk.learn.jsonparser;
+package jk.learn.demo;
 
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import jk.learn.jsonparser.CharIterator;
 
 public class NamasteyJava {
   public static void main(String[] args) {

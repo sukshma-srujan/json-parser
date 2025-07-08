@@ -20,7 +20,7 @@ public class Tokenizer {
   static final Matcher PARTIAL_TRUE = Pattern.compile("t|tr|tru|true", Pattern.CASE_INSENSITIVE).matcher("");
   static final Matcher COMPLETE_TRUE = Pattern.compile("true", Pattern.CASE_INSENSITIVE).matcher("");
 
-  static List<Token> tokenize(char[] json) {
+  public static List<Token> tokenize(char[] json) {
     List<Token> tokens = new LinkedList<>();
     int line = 1;
     int column = 0;
