@@ -6,7 +6,7 @@ public class JsonParsingDemo {
         {
           "name": "ram",
           "city": "ayodhya",
-          "place": null,
+          "place": null
         }\
         """.toCharArray();
 

@@ -2,12 +2,12 @@ package jk.learn.jsonparser;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Tokenizer {
-  static final Pattern NULL_INTERMEDIATE = Pattern.compile("(n|nu|nul|null)", Pattern.CASE_INSENSITIVE);
-  static final Pattern NULL_FINAL = Pattern.compile("null", Pattern.CASE_INSENSITIVE);
+  static final Pattern PARTIAL_NULL = Pattern.compile("n|nu|nul", Pattern.CASE_INSENSITIVE);
+  static final Pattern COMPLETE_NULL = Pattern.compile("null", Pattern.CASE_INSENSITIVE);
 
   static List<Token> tokenize(char[] json) {
     // trying to parse a simple object with key values, all values are strings
@@ -15,8 +15,8 @@ public class Tokenizer {
     //   "key": "value"
     // }
     List<Token> tokens = new LinkedList<>();
-    final Matcher nullIntermediateMatcher = NULL_INTERMEDIATE.matcher("");
-    final Matcher nullFinalMatcher = NULL_FINAL.matcher("");
+    final Matcher partialNullMatcher = PARTIAL_NULL.matcher("");
+    final Matcher completeNullMatcher = COMPLETE_NULL.matcher("");
     int line = 1;
     int column = 0;
     StringBuilder buffer = null;
@@ -25,46 +25,50 @@ public class Tokenizer {
 
     BasicContext ctxt = new BasicContext();
 
-    for (char ch : json) {
+    CharIterator ci = new CharIterator(json);
+    while (ci.hasNext()) {
       column++;
+      char ch = ci.next();
 
-      if (ctxt.isNone() && ch == '"') {
+      if (ch == '"') {
         ctxt.inToString();
         sLine = line;
         sCol = column;
         buffer = new StringBuilder();
+
+        while (ci.hasNext()) {
+          ch = ci.next();
+          if (ch == '"') {
+            ctxt.outOfString();
+            tokens.add(Token.string(sLine, sCol, buffer.toString()));
+            buffer = null;
+            break;
+          } else {
+            buffer.append(ch);
+          }
+        }
       }
-      else if (ctxt.isString() && ch == '"') {
-        ctxt.outOfString();
-        tokens.add(Token.string(sLine, sCol, buffer.toString()));
-        sLine = 0;
-        sCol = 0;
-        buffer = null;
-      }
-      else if (ctxt.isString()) {
-        buffer.append(ch);
-      }
-      else if (ctxt.isNone() && isNullBegin(ch)) {
+      else if (isNullBegin(ch)) {
         ctxt.inToNull();
         buffer = new StringBuilder(4);
         sLine = line;
         sCol = column;
         buffer.append(ch);
-      }
-      else if (ctxt.isNull()) {
-        buffer.append(ch);
-        nullFinalMatcher.reset(buffer);
-        if (nullFinalMatcher.matches()) {
-          tokens.add(Token._null(sLine, sCol, buffer.toString()));
-          buffer = null;
-          sLine = 0;
-          sCol = 0;
-          ctxt.outOfNull();
-          continue;
-        }
-        nullIntermediateMatcher.reset(buffer);
-        if (!nullIntermediateMatcher.matches()) {
-          throw new JsonParsingException("Expecting 'null' at line " + sLine + " and column " + sCol);
+
+        while (ci.hasNext()) {
+          ch = ci.next();
+          buffer.append(ch);
+          completeNullMatcher.reset(buffer);
+          partialNullMatcher.reset(buffer);
+          if (completeNullMatcher.matches()) {
+            tokens.add(Token._null(sLine, sCol, buffer.toString()));
+            buffer = null;
+            ctxt.outOfNull();
+            break;
+          }
+          else if (!partialNullMatcher.matches()) {
+            throw new JsonParsingException("Expecting 'null' at line " + sLine + " and column " + sCol);
+          }
         }
       }
       else if (ch == '\n') {
@@ -88,7 +92,7 @@ public class Tokenizer {
       }
       else {
         throw new JsonParsingException(
-            "Unrecognized character '" + ch + "' at line " + line + " and column " + column);
+            "Unexpected character '" + ch + "' at line " + line + " and column " + column);
       }
     }
 

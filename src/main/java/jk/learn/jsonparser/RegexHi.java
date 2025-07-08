@@ -5,6 +5,10 @@ import java.util.regex.Matcher;
 
 public class RegexHi {
   public static void main(String[] args) {
+    test1();
+  }
+
+  static void test1() {
     Pattern p = Pattern.compile("null");
     Matcher matcher = p.matcher("");
 

@@ -29,12 +29,14 @@ public class Token {
   }
 
   private String contentToString() {
-    if (content == null || type == TokenType.NULL) {
+    if (content == null) {
       return "";
     }
     String val = "";
     if (type == TokenType.STRING) {
       val = "\"" + content + "\"";
+    } else {
+      val = content;
     }
     return ", " + val;
   }
