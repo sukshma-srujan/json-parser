@@ -25,8 +25,8 @@ public class Tokenizer {
     int line = 1;
     int column = 0;
     StringBuilder buffer = null;
-    int sLine = 0;
-    int sCol = 0;
+    int sLine;
+    int sCol;
 
     CharIterator ci = new CharIterator(json);
     while (ci.hasNext()) {
@@ -38,13 +38,19 @@ public class Tokenizer {
         line++;
       }
       else if (ch == ' ' || ch == '\t') {
-        // do nothing
+        // ignored
       }
       else if (ch == '{') {
-        tokens.add(Token.oStart(line, column));
+        tokens.add(Token.os(line, column));
       }
       else if (ch == '}') {
-        tokens.add(Token.oEnd(line, column));
+        tokens.add(Token.oe(line, column));
+      }
+      else if (ch == '[') {
+        tokens.add(Token.as(line, column));
+      }
+      else if (ch == ']') {
+        tokens.add(Token.ae(line, column));
       }
       else if (ch == ':') {
         tokens.add(Token.colon(line, column));
@@ -192,47 +198,5 @@ public class Tokenizer {
 
   static boolean isFalseBegins(char ch) {
     return ch == 'f' || ch == 'F';
-  }
-
-  static class BasicContext {
-    boolean _string;
-    boolean _null;
-    boolean _number;
-
-    void inToString() {
-      _string = !_string;
-    }
-
-    void outOfString() {
-      _string = !_string;
-    }
-
-    void inToNull() {
-      _null = !_null;
-    }
-
-    void outOfNull() {
-      _null = !_null;
-    }
-
-    void inToNumber() {
-      _number = !_number;
-    }
-
-    void outOfNumber() {
-      _number = !_number;
-    }
-
-    boolean isString() {
-      return _string && !_null && !_number;
-    }
-
-    boolean isNull() {
-      return !_string && _null && !_number;
-    }
-
-    boolean isNone() {
-      return !_string && !_null && _number;
-    }
   }
 }

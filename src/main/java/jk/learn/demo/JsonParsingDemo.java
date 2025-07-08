@@ -1,6 +1,6 @@
 package jk.learn.demo;
 
-import jk.learn.jsonparser.Grammer;
+import jk.learn.jsonparser.Grammar;
 import jk.learn.jsonparser.Tokenizer;
 
 public class JsonParsingDemo {
@@ -13,7 +13,13 @@ public class JsonParsingDemo {
           "arrows": 29,
           "water": 0.5,
           "angry": False,
-          "loving": TRUE
+          "loving": TRUE,
+          "attributes": {
+            "complexion": "fair-blue",
+            "height": "very-good",
+            "weight": "almost-perfect",
+            "arrowTypes": ["sarkanda", "agni"]
+          }
         }\
         """.toCharArray();
 
@@ -21,10 +27,9 @@ public class JsonParsingDemo {
     System.out.println("--------");
 
     var tokens = Tokenizer.tokenize(json);
-    Grammer.check(tokens);
-
     for (var t : tokens) {
       System.out.println(t);
     }
+    Grammar.check(tokens);
   }
 }

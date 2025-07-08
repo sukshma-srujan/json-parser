@@ -25,15 +25,16 @@ public class Token {
 
   @Override
   public String toString() {
-    return "Token(" + type + contentToString() + ")";
+    String s = ", line: " + line + ", colStart: " + colStart + ", colEnd: " + colEnd;
+    return "Token(" + type + s + contentToString() + ")";
   }
 
   private String contentToString() {
     if (content == null) {
       return "";
     }
-    String val = "";
-    if (type == TokenType.STRING) {
+    String val;
+    if (type == TokenType.string0) {
       val = "\"" + content + "\"";
     } else {
       val = content;
@@ -41,39 +42,79 @@ public class Token {
     return ", " + val;
   }
 
-  static Token oStart(int line, int col) {
-    return new Token(TokenType.O_START, line, col);
+  public boolean isOs() {
+    return this.type == TokenType.os0;
   }
 
-  static Token oEnd(int line, int col) {
-    return new Token(TokenType.O_END, line, col);
+  public boolean isOe() {
+    return this.type == TokenType.oe0;
+  }
+
+  public boolean isAs() {
+    return this.type == TokenType.as0;
+  }
+
+  public boolean isAe() {
+    return this.type == TokenType.ae0;
+  }
+
+  public boolean isBasic() {
+    return TokenType.basic_types.contains(this.type);
+  }
+
+  public boolean isString() {
+    return this.type == TokenType.string0;
+  }
+
+  public boolean isColon() {
+    return this.type == TokenType.colon0;
+  }
+
+  public boolean isComma() {
+    return this.type == TokenType.comma0;
+  }
+
+  static Token os(int line, int col) {
+    return new Token(TokenType.os0, line, col);
+  }
+
+  static Token oe(int line, int col) {
+    return new Token(TokenType.oe0, line, col);
+  }
+
+  static Token as(int line, int col) {
+    return new Token(TokenType.as0, line, col);
+  }
+
+  static Token ae(int line, int col) {
+    return new Token(TokenType.ae0, line, col);
   }
 
   static Token colon(int line, int col) {
-    return new Token(TokenType.COLON, line, col);
+    return new Token(TokenType.colon0, line, col);
   }
 
   static Token comma(int line, int col) {
-    return new Token(TokenType.COMMA, line, col);
+    return new Token(TokenType.comma0, line, col);
   }
 
   static Token string(int line, int col, String content) {
-    return new Token(TokenType.STRING, line, col, col + content.length() + 1, content);
+    return new Token(TokenType.string0, line, col, col + content.length() + 1, content);
   }
 
   static Token _null(int line, int col, String content) {
-    return new Token(TokenType.NULL, line, col, col + content.length(), content);
+    return new Token(TokenType.null0, line, col, col + content.length(), content);
   }
 
   static Token number(int line, int col, String content) {
-    return new Token(TokenType.NUMBER, line, col, col + content.length(), content);
+    return new Token(TokenType.number0, line, col, col + content.length(), content);
   }
 
   static Token _true(int line, int col, String content) {
-    return new Token(TokenType.TRUE, line, col, col + content.length(), content);
+    return new Token(TokenType.true0, line, col, col + content.length(), content);
   }
 
   static Token _false(int line, int col, String content) {
-    return new Token(TokenType.FALSE, line, col, col + content.length(), content);
+    return new Token(TokenType.false0, line, col, col + content.length(), content);
   }
 }
