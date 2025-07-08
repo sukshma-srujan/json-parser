@@ -16,10 +16,6 @@ public class Tokenizer {
   static final Matcher NUMBER_START_MATCHER = NUMBER_START.matcher("");
 
   static List<Token> tokenize(char[] json) {
-    // trying to parse a simple object with key values, all values are strings
-    // {
-    //   "key": "value"
-    // }
     List<Token> tokens = new LinkedList<>();
     final Matcher partialNumberMatcher = PARTIAL_NUMBER.matcher("");
     final Matcher completeNumberMatcher = COMPLETE_NUMBER.matcher("");
@@ -94,7 +90,8 @@ public class Tokenizer {
             break;
           }
           else if (!partialNullMatcher.matches()) {
-            throw new JsonParsingException("Expecting 'null' at line " + sLine + " and column " + sCol);
+            ch = buffer.charAt(buffer.length() - 1);
+            throw new JsonParsingException("Unexpected character '" + ch + "' at line " + sLine + " and column " + sCol);
           }
         }
       }

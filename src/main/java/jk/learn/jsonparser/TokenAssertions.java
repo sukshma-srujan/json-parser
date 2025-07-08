@@ -3,6 +3,9 @@ package jk.learn.jsonparser;
 import java.util.*;
 
 public class TokenAssertions {
+  private static final Set<TokenType> JSON_TYPES =
+      Set.of(TokenType.STRING, TokenType.NULL, TokenType.NUMBER);
+
   private final ListIterator<Token> it;
   private Token token;
 
@@ -33,13 +36,17 @@ public class TokenAssertions {
     if (token == null) {
       throw new JsonParsingException("Expecting JSON");
     }
-    if (token.type != TokenType.STRING && token.type != TokenType.NULL) {
+    if (!JSON_TYPES.contains(token.type)) {
       throw new JsonParsingException("Expecting JSON at line " + token.line + " and column " + token.colStart);
     }
   }
 
   public void mustBeString() {
     mustBe(TokenType.STRING);
+  }
+
+  public void mustBeNumber() {
+    mustBe(TokenType.NUMBER);
   }
 
   public void mustBeObjectStart() {
@@ -63,7 +70,7 @@ public class TokenAssertions {
       throw unexpectedEof(type);
     }
     if (token.type != type) {
-      throw unexpectedToken(type, token);
+      throw unexpectedToken(token);
     }
   }
 
@@ -87,11 +94,9 @@ public class TokenAssertions {
     return token != null && token.type == TokenType.COMMA;
   }
 
-  static RuntimeException unexpectedToken(TokenType expected, Token token) {
+  static RuntimeException unexpectedToken(Token token) {
     throw new JsonParsingException(
-        "Expected "
-        + stringFor(expected)
-        + " but found "
+        "Unexpected "
         + stringFor(token.type)
         + " at line "
         + token.line

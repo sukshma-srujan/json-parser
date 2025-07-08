@@ -7,7 +7,8 @@ public class JsonParsingDemo {
           "name": "ram",
           "city": "ayodhya",
           "place": null,
-          "arrows": 29
+          "arrows": 29,
+          "water": 0.5
         }\
         """.toCharArray();
 
@@ -15,7 +16,7 @@ public class JsonParsingDemo {
     System.out.println("--------");
 
     var tokens = Tokenizer.tokenize(json);
-    // Grammer.check(tokens);
+    Grammer.check(tokens);
 
     for (var t : tokens) {
       System.out.println(t);
