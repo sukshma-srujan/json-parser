@@ -6,28 +6,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
-  static final Pattern NUMBER_START = Pattern.compile("[+-]|\\d");
-  static final Pattern PARTIAL_NUMBER =
-      Pattern.compile("[+-]?\\d+|[+-]?\\d+\\.|[+-]?\\d+\\.\\d+");
-  static final Pattern COMPLETE_NUMBER = Pattern.compile("([+-]?\\d+)(\\.\\d+)?");
-  static final Pattern PARTIAL_NULL = Pattern.compile("n|nu|nul", Pattern.CASE_INSENSITIVE);
-  static final Pattern COMPLETE_NULL = Pattern.compile("null", Pattern.CASE_INSENSITIVE);
+  static final Matcher NUMBER_START = Pattern.compile("[+-]|\\d").matcher("");
+  static final Matcher PARTIAL_NUMBER =
+      Pattern.compile("[+-]?\\d+|[+-]?\\d+\\.|[+-]?\\d+\\.\\d+").matcher("");
+  static final Matcher COMPLETE_NUMBER = Pattern.compile("([+-]?\\d+)(\\.\\d+)?").matcher("");
 
-  static final Matcher NUMBER_START_MATCHER = NUMBER_START.matcher("");
+  static final Matcher PARTIAL_NULL = Pattern.compile("n|nu|nul", Pattern.CASE_INSENSITIVE).matcher("");
+  static final Matcher COMPLETE_NULL = Pattern.compile("null", Pattern.CASE_INSENSITIVE).matcher("");
+
+  static final Matcher PARTIAL_FALSE = Pattern.compile("f|fa|fal|fals|false", Pattern.CASE_INSENSITIVE).matcher("");
+  static final Matcher COMPLETE_FALSE = Pattern.compile("false", Pattern.CASE_INSENSITIVE).matcher("");
+
+  static final Matcher PARTIAL_TRUE = Pattern.compile("t|tr|tru|true", Pattern.CASE_INSENSITIVE).matcher("");
+  static final Matcher COMPLETE_TRUE = Pattern.compile("true", Pattern.CASE_INSENSITIVE).matcher("");
 
   static List<Token> tokenize(char[] json) {
     List<Token> tokens = new LinkedList<>();
-    final Matcher partialNumberMatcher = PARTIAL_NUMBER.matcher("");
-    final Matcher completeNumberMatcher = COMPLETE_NUMBER.matcher("");
-    final Matcher partialNullMatcher = PARTIAL_NULL.matcher("");
-    final Matcher completeNullMatcher = COMPLETE_NULL.matcher("");
     int line = 1;
     int column = 0;
     StringBuilder buffer = null;
     int sLine = 0;
     int sCol = 0;
-
-    BasicContext ctxt = new BasicContext();
 
     CharIterator ci = new CharIterator(json);
     while (ci.hasNext()) {
@@ -54,7 +53,6 @@ public class Tokenizer {
         tokens.add(Token.comma(line, column));
       }
       else if (ch == '"') {
-        ctxt.inToString();
         sLine = line;
         sCol = column;
         buffer = new StringBuilder();
@@ -62,7 +60,6 @@ public class Tokenizer {
         while (ci.hasNext()) {
           ch = ci.next();
           if (ch == '"') {
-            ctxt.outOfString();
             tokens.add(Token.string(sLine, sCol, buffer.toString()));
             buffer = null;
             break;
@@ -71,8 +68,7 @@ public class Tokenizer {
           }
         }
       }
-      else if (isNullBegin(ch)) {
-        ctxt.inToNull();
+      else if (isNullBegins(ch)) {
         buffer = new StringBuilder(4);
         sLine = line;
         sCol = column;
@@ -81,22 +77,20 @@ public class Tokenizer {
         while (ci.hasNext()) {
           ch = ci.next();
           buffer.append(ch);
-          completeNullMatcher.reset(buffer);
-          partialNullMatcher.reset(buffer);
-          if (completeNullMatcher.matches()) {
+          COMPLETE_NULL.reset(buffer);
+          PARTIAL_NULL.reset(buffer);
+          if (COMPLETE_NULL.matches()) {
             tokens.add(Token._null(sLine, sCol, buffer.toString()));
             buffer = null;
-            ctxt.outOfNull();
             break;
           }
-          else if (!partialNullMatcher.matches()) {
+          else if (!PARTIAL_NULL.matches()) {
             ch = buffer.charAt(buffer.length() - 1);
             throw new JsonParsingException("Unexpected character '" + ch + "' at line " + sLine + " and column " + sCol);
           }
         }
       }
-      else if (isNumberBegin(ch)) {
-        ctxt.inToNumber();
+      else if (isNumberBegins(ch)) {
         buffer = new StringBuilder(10);
         sLine = line;
         sCol = column;
@@ -105,28 +99,69 @@ public class Tokenizer {
         while (ci.hasNext()) {
           ch = ci.next();
           buffer.append(ch);
-          partialNumberMatcher.reset(buffer);
+          PARTIAL_NUMBER.reset(buffer);
 
-          if (!partialNumberMatcher.matches()) {
+          if (!PARTIAL_NUMBER.matches()) {
             break;
           }
         }
 
-        if (!partialNumberMatcher.matches()) {
+        if (!PARTIAL_NUMBER.matches()) {
           buffer.deleteCharAt(buffer.length() - 1);
           ci.previous();
         }
 
-        completeNumberMatcher.reset(buffer);
+        COMPLETE_NUMBER.reset(buffer);
 
-        if (completeNumberMatcher.matches()) {
+        if (COMPLETE_NUMBER.matches()) {
           tokens.add(Token.number(sLine, sCol, buffer.toString()));
           buffer = null;
-          ctxt.outOfNumber();
         } else {
           ch = buffer.charAt(buffer.length() - 1);
           throw new JsonParsingException(
               "Unexpected character '" + ch + "' at line " + line + " and column " + column);
+        }
+      } else if (isTrueBegins(ch)) {
+        buffer = new StringBuilder(4);
+        sLine = line;
+        sCol = column;
+        buffer.append(ch);
+
+        while (ci.hasNext()) {
+          ch = ci.next();
+          buffer.append(ch);
+          COMPLETE_TRUE.reset(buffer);
+          PARTIAL_TRUE.reset(buffer);
+          if (COMPLETE_TRUE.matches()) {
+            tokens.add(Token._true(sLine, sCol, buffer.toString()));
+            buffer = null;
+            break;
+          }
+          else if (!PARTIAL_TRUE.matches()) {
+            ch = buffer.charAt(buffer.length() - 1);
+            throw new JsonParsingException("Unexpected character '" + ch + "' at line " + sLine + " and column " + sCol);
+          }
+        }
+      } else if (isFalseBegins(ch)) {
+        buffer = new StringBuilder(5);
+        sLine = line;
+        sCol = column;
+        buffer.append(ch);
+
+        while (ci.hasNext()) {
+          ch = ci.next();
+          buffer.append(ch);
+          COMPLETE_FALSE.reset(buffer);
+          PARTIAL_FALSE.reset(buffer);
+          if (COMPLETE_FALSE.matches()) {
+            tokens.add(Token._false(sLine, sCol, buffer.toString()));
+            buffer = null;
+            break;
+          }
+          else if (!PARTIAL_FALSE.matches()) {
+            ch = buffer.charAt(buffer.length() - 1);
+            throw new JsonParsingException("Unexpected character '" + ch + "' at line " + sLine + " and column " + sCol);
+          }
         }
       }
       else {
@@ -142,13 +177,21 @@ public class Tokenizer {
     return tokens;
   }
 
-  static boolean isNullBegin(char ch) {
+  static boolean isNullBegins(char ch) {
     return ch == 'n' || ch == 'N';
   }
 
-  static boolean isNumberBegin(char ch) {
-    NUMBER_START_MATCHER.reset(ch + "");
-    return NUMBER_START_MATCHER.matches();
+  static boolean isNumberBegins(char ch) {
+    NUMBER_START.reset(ch + "");
+    return NUMBER_START.matches();
+  }
+
+  static boolean isTrueBegins(char ch) {
+    return ch == 't' || ch == 'T';
+  }
+
+  static boolean isFalseBegins(char ch) {
+    return ch == 'f' || ch == 'F';
   }
 
   static class BasicContext {

@@ -68,4 +68,12 @@ public class Token {
   static Token number(int line, int col, String content) {
     return new Token(TokenType.NUMBER, line, col, col + content.length(), content);
   }
+
+  static Token _true(int line, int col, String content) {
+    return new Token(TokenType.TRUE, line, col, col + content.length(), content);
+  }
+
+  static Token _false(int line, int col, String content) {
+    return new Token(TokenType.FALSE, line, col, col + content.length(), content);
+  }
 }

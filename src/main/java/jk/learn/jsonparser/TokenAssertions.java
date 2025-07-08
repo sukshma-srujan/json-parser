@@ -4,7 +4,7 @@ import java.util.*;
 
 public class TokenAssertions {
   private static final Set<TokenType> JSON_TYPES =
-      Set.of(TokenType.STRING, TokenType.NULL, TokenType.NUMBER);
+      Set.of(TokenType.STRING, TokenType.NULL, TokenType.NUMBER, TokenType.TRUE, TokenType.FALSE);
 
   private final ListIterator<Token> it;
   private Token token;
@@ -43,10 +43,6 @@ public class TokenAssertions {
 
   public void mustBeString() {
     mustBe(TokenType.STRING);
-  }
-
-  public void mustBeNumber() {
-    mustBe(TokenType.NUMBER);
   }
 
   public void mustBeObjectStart() {
@@ -114,6 +110,8 @@ public class TokenAssertions {
       case STRING -> "string";
       case NUMBER -> "number";
       case NULL -> "null";
+      case TRUE -> "true";
+      case FALSE -> "false";
       case O_START -> "'{'";
       case O_END -> "'}'";
       case COLON -> "':'";
